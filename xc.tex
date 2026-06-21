@@ -1,0 +1,263 @@
+\documentclass[12pt, a4paper]{article}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{multicol}
+\RequirePackage{ragged2e}
+\RequirePackage{graphicx}
+\RequirePackage{amsmath}
+\RequirePackage{xcolor}
+\RequirePackage{geometry}
+\RequirePackage{caption}
+\RequirePackage{subcaption}
+\RequirePackage{enumitem}
+\RequirePackage{tikz}
+\geometry{top = 2.5cm, bottom = 2.5cm, left = 1.5cm, right = 1.5cm}
+\makeatletter
+  \def\vhrulefill#1{\leavevmode\leaders\hrule\@height#1\hfill \kern\z@}
+\makeatother
+
+%-----------------------------------------------------------
+%       TO START EDITING THE DOCUMENT JUMP TO LINE 148
+%-----------------------------------------------------------
+\title{Question Paper}
+\author{}
+\date{}
+%------------------------------------------------------------
+%                    HEADER INFORMATION
+%------------------------------------------------------------
+\newcommand{\hdr}[6]{
+\begin{center}
+    \ifx&#1& \else \leavevmode{\Huge #1}\\[5mm] \fi
+    #2\\\vspace{5mm}
+    {\Large \textbf{#3}}\\[2.5mm]
+    {\Large \textbf{#4}}\\
+\end{center}
+\begin{raggedleft}
+{\large \textbf{#5 \hfill #6}\\}\vspace{3mm} 
+\vhrulefill{5pt}
+\end{raggedleft}}
+
+%------------------------------------------------------------
+%                  GENERAL INSTRUCTIONS
+%------------------------------------------------------------
+\newcommand{\geninstructions}[1]{
+\begin{raggedright}
+\vspace{3mm}
+\textbf{\large INSTRUCTIONS}
+\textit{
+\begin{itemize}
+    #1
+\end{itemize}}
+\hrulefill\\
+\hrulefill \\\vspace{5mm}
+\end{raggedright}}
+
+%-----------------------------------------------------------
+%                   QUESTION SECTION
+%-----------------------------------------------------------
+\newcommand{\questionsection}[3]{
+\vspace{2.5mm}
+\begin{center}
+    \textbf{\large \underline{SECTION - #1}}\\
+{\small \textbf{#2}}
+\end{center}
+{\small 
+\textit{\begin{itemize}[noitemsep, topsep=0pt]
+    #3
+\end{itemize}}}}
+
+%-----------------------------------------------------------
+%              4 OPTION MCQ SEPARATED IN 2 COLS
+%-----------------------------------------------------------
+\newcommand{\mcqfourtwo}[9]{
+\vspace{2.5mm}
+\begin{raggedright}
+\textbf{Question #1:} #2 \hfill \textit{#7}\\
+\textit{#8}\\
+#9
+\begin{multicols}{2}{}
+(a) #3\\
+(c) #5\\
+\columnbreak
+(b) #4\\
+(d) #6\\
+\end{multicols}
+\end{raggedright}}
+
+%-----------------------------------------------------------
+%                   DESCRIPTIVE QUESTION
+%-----------------------------------------------------------
+\newcommand{\question}[4]{
+\vspace{1.5mm}
+\begin{raggedright}
+\textbf{Question #1:} #2\hfill\textit{#3}\\
+\textit{#4}\\
+\end{raggedright}}
+
+%-----------------------------------------------------------
+%                 BEGIN DOCUMENT
+%-----------------------------------------------------------
+
+\begin{document}
+
+\hdr{}{Class XI (ISC)}{Assignment - 1}{(Errors, Sig. Figs, Vectors \& Projectile Motion)}{1 Hr 30 Mins}{50 marks}
+
+\geninstructions{
+      \item All questions are compulsory.
+      \item The paper consists of four sections: A, B, C, and D.
+      \item Section A contains 10 MCQs of 1 mark each. Section B contains 5 questions of 2 marks each. Section C contains 5 questions of 3 marks each. Section D contains 3 long questions of 5 marks each.
+      \item Use of a scientific calculator is permitted.
+}
+
+%-----------------------------------------------------------
+%                     SECTION A
+%-----------------------------------------------------------
+\questionsection{A}{Answer all of the following multiple choice questions.}{
+\item 10$\times$1=10 Marks
+}
+
+\mcqfourtwo{1}{The number of significant figures in the measurement $0.005020 \text{ kg}$ is:}
+        {3}
+        {4}
+        {6}
+        {7}
+        {(1)}{}{}
+
+\mcqfourtwo{2}{The dimensional formula for the Universal Gravitational Constant ($G$) is:}
+        {$[M^{-1}L^{3}T^{-2}]$}
+        {$[M^{1}L^{2}T^{-2}]$}
+        {$[M^{-1}L^{2}T^{-2}]$}
+        {$[M^{1}L^{3}T^{-2}]$}
+        {(1)}{}{}
+
+\mcqfourtwo{3}{A physical quantity $Z$ is given by $Z = \frac{A^2 B}{C^3}$. If the percentage errors in the measurement of $A, B$, and $C$ are $1\%, 2\%$, and $3\%$ respectively, the maximum percentage error in $Z$ is:}
+        {$6\%$}
+        {$13\%$}
+        {$14\%$}
+        {$8\%$}
+        {(1)}{}{}
+
+\mcqfourtwo{4}{If $\vec{A} \cdot \vec{B} = 0$ and both $\vec{A}$ and $\vec{B}$ are non-zero vectors, it implies that the vectors are:}
+        {Parallel}
+        {Anti-parallel}
+        {Perpendicular}
+        {Equal in magnitude}
+        {(1)}{}{}
+
+\mcqfourtwo{5}{For a given initial velocity, the angle of projection for which a projectile covers the maximum horizontal range is:}
+        {$30^{\circ}$}
+        {$45^{\circ}$}
+        {$60^{\circ}$}
+        {$90^{\circ}$}
+        {(1)}{}{}
+
+\mcqfourtwo{6}{Which of the following physical quantities has the dimensional formula $[M^1 L^{-1} T^{-2}]$?}
+        {Force}
+        {Work}
+        {Pressure}
+        {Power}
+        {(1)}{}{}
+
+\mcqfourtwo{7}{The magnitude of the cross product of two vectors is $\sqrt{3}$ times the magnitude of their dot product. The angle between the two vectors is:}
+        {$30^{\circ}$}
+        {$45^{\circ}$}
+        {$60^{\circ}$}
+        {$90^{\circ}$}
+        {(1)}{}{}
+
+\mcqfourtwo{8}{The minimum number of unequal coplanar vectors whose resultant can be zero is:}
+        {Two}
+        {Three}
+        {Four}
+        {Infinite}
+        {(1)}{}{}
+
+\mcqfourtwo{9}{A projectile is fired at an angle $\theta$ such that its maximum height is equal to its horizontal range ($H = R$). The angle of projection $\theta$ is:}
+        {$\tan^{-1}(1)$}
+        {$\tan^{-1}(2)$}
+        {$\tan^{-1}(4)$}
+        {$\tan^{-1}(1/4)$}
+        {(1)}{}{}
+
+\mcqfourtwo{10}{If $|\vec{A} \times \vec{B}|^2 + |\vec{A} \cdot \vec{B}|^2 = 144$ and $|\vec{A}| = 4$, then the magnitude of $\vec{B}$ is:}
+        {3}
+        {4}
+        {12}
+        {36}
+        {(1)}{}{}
+
+\newpage
+
+%-----------------------------------------------------------
+%                     SECTION B
+%-----------------------------------------------------------
+\questionsection{B}{Answer the following short answer questions.}{
+\item 5$\times$2=10 Marks
+}
+
+\question{1}{State the rules for rounding off measurements ending in 5. Apply them to round off the values $3.785$ and $3.775$ to three significant figures.}
+{(2)}{}
+
+\question{2}{The mass of a solid sphere is measured as $(5.00 \pm 0.05) \text{ kg}$ and its radius as $(10.0 \pm 0.1) \text{ cm}$. Calculate the maximum percentage error in the determination of its density.}
+{(2)}{}
+
+\question{3}{Find a unit vector parallel to the resultant of the vectors $\vec{A} = 2\hat{i} + 3\hat{j} - \hat{k}$ and $\vec{B} = \hat{i} - 2\hat{j} + 3\hat{k}$.}
+{(2)}{}
+
+\question{4}{A projectile is fired at an angle of $30^{\circ}$ to the horizontal. Calculate the ratio of its maximum height attained to its horizontal range.}
+{(2)}{}
+
+\question{5}{Using the principle of homogeneity of dimensions, check the correctness of the equation $v = \sqrt{\frac{T}{m}}$, where $v$ is the velocity of a transverse wave on a string, $T$ is the tension in the string, and $m$ is the mass per unit length (linear mass density) of the string.}
+{(2)}{}
+
+
+%-----------------------------------------------------------
+%                     SECTION C
+%-----------------------------------------------------------
+\questionsection{C}{Answer the following medium answer questions.}{
+\item 5$\times$3=15 Marks
+}
+
+\question{1}{The period of oscillation of a simple pendulum is given by $T = 2\pi\sqrt{\frac{L}{g}}$. The measured value of $L$ is $20.0 \text{ cm}$ known to $1 \text{ mm}$ accuracy and the time for 100 oscillations of the pendulum is found to be $90 \text{ s}$ using a wrist watch of $1 \text{ s}$ resolution. Find the maximum percentage error in the determination of $g$.}
+{(3)}{}
+
+\question{2}{State the Parallelogram Law of Vector Addition. Derive the analytical expression for the magnitude of the resultant of two vectors $\vec{P}$ and $\vec{Q}$ inclined at an angle $\theta$ to each other.}
+{(3)}{}
+
+\question{3}{An FPV drone is flying horizontally at a steady speed of $20 \text{ m/s}$ at an altitude of $80 \text{ m}$. It releases a small environmental sensor payload to test a micro-ecosystem below. Neglecting air resistance, calculate: 
+\newline (a) The time taken by the sensor payload to reach the ground.
+\newline (b) The horizontal distance (range) from the drop point to where the sensor lands. (Take $g = 10 \text{ m/s}^2$).}
+{(3)}{}
+
+\question{4}{Given two vectors $\vec{A} = \hat{i} + 2\hat{j} + x\hat{k}$ and $\vec{B} = 2\hat{i} - \hat{j} + \hat{k}$. 
+\newline (a) Find the value of $x$ for which the two vectors are exactly perpendicular to each other.
+\newline (b) Using the calculated value of $x$, find the cross product $\vec{A} \times \vec{B}$.}
+{(3)}{}
+
+\question{5}{A particle is moving in a circular path. Assuming that the centripetal force ($F$) acting on it depends upon the mass ($m$) of the particle, its velocity ($v$), and the radius ($r$) of the circular path, derive an expression for the force using the method of dimensional analysis. (Take the dimensionless constant $k = 1$).}
+{(3)}{}
+
+\newpage
+
+%-----------------------------------------------------------
+%                     SECTION D
+%-----------------------------------------------------------
+\questionsection{D}{Answer the following long answer questions.}{
+\item 3$\times$5=15 Marks
+}
+
+\question{1}{(i) For a projectile fired from the ground with an initial velocity $u$ at an angle $\theta$ with the horizontal, show mathematically that its trajectory is a parabola.
+\newline (ii) Show that for a given initial velocity, there are two angles of projection $\theta_1$ and $\theta_2$ for which the horizontal range is the same. If $t_1$ and $t_2$ are the respective times of flight for these two angles, prove that $t_1 t_2 = \frac{2R}{g}$, where $R$ is the horizontal range.}
+{(2+3)}{}
+
+\question{2}{(i) A river $1 \text{ km}$ wide is flowing at a steady rate of $3 \text{ km/h}$. A swimmer, who can swim at a speed of $5 \text{ km/h}$ in still water, wishes to cross the river straight to the point exactly opposite his starting point. At what angle to the river flow should he swim?
+\newline (ii) How much time will the swimmer take to cross the river along this shortest path?
+\newline (iii) If instead, he dives strictly perpendicular to the river flow, how far downstream will he be carried by the time he reaches the opposite bank?}
+{(2+1+2)}{}
+
+\question{3}{(i) The Vander Waals equation for a real gas is given by:
+$$ \left(P + \frac{a}{V^2}\right)(V - b) = RT $$
+Where $P$ is pressure, $V$ is volume, $T$ is temperature, and $R$ is the universal gas constant. Deduce the dimensional formulas for the constants $a$ and $b$.
+\newline (ii) The sum and difference of two non-zero vectors $\vec{A}$ and $\vec{B}$ are equal in magnitude, i.e., $|\vec{A} + \vec{B}| = |\vec{A} - \vec{B}|$. Prove mathematically that the vectors $\vec{A}$ and $\vec{B}$ must be strictly perpendicular to each other.}
+{(3+2)}{}
+
+\end{document}
