@@ -30,7 +30,7 @@ current_ball_color = random.choice(BALL_COLORS)
 
 # Game Economy & States
 GAME_STATE = "LOGIN"  
-game_mode = "1vBOT"   # "1vBOT", "1v1", "GHOST"
+game_mode = "1vBOT"   
 SAVE_FILE = "cyber_pong_save.json"
 
 # Profile variables
@@ -51,11 +51,21 @@ ghost_search_msg = "Enter opponent's username:"
 # Visual feedback timer for saving
 save_message_timer = 0
 
-# Default Shop Blueprint
+# Stamina System
+MAX_STAMINA = 100
+p1_stamina = MAX_STAMINA
+p2_stamina = MAX_STAMINA
+STAMINA_DRAIN = 1.5
+STAMINA_REGEN = 0.5
+MAX_BALL_SPEED = 24  # Prevents the ball from phasing through paddles
+
+# Default Shop Blueprint (5 CHARACTERS)
 DEFAULT_CHARACTERS = {
     "1": {"name": "CLASSIC (Standard)", "desc": "No special abilities. Pure skill.", "color": (0, 255, 200), "cost": 0, "unlocked": True, "ability": "NONE"},
     "2": {"name": "AUTO-BOT (The Machine)", "desc": "Automates movement for 2s every 5s.", "color": (255, 255, 0), "cost": 30, "unlocked": False, "ability": "AUTO_PILOT"},
-    "3": {"name": "PHANTOM (The Ghost)", "desc": "Moves incredibly fast.", "color": (150, 0, 255), "cost": 80, "unlocked": False, "ability": "SPEED"}
+    "3": {"name": "PHANTOM (The Ghost)", "desc": "Moves incredibly fast.", "color": (150, 0, 255), "cost": 80, "unlocked": False, "ability": "SPEED"},
+    "4": {"name": "TITAN (The Wall)", "desc": "Massive paddle, but moves slower.", "color": (255, 100, 0), "cost": 120, "unlocked": False, "ability": "GIANT"},
+    "5": {"name": "SNIPER (The Striker)", "desc": "Reflects the ball with extreme speed.", "color": (255, 50, 50), "cost": 150, "unlocked": False, "ability": "POWER_STRIKE"}
 }
 
 # --- SAVE & LOAD SYSTEM ---
@@ -71,11 +81,13 @@ def load_all_data():
         all_users_data = {}
 
 def load_user_profile(username):
-    global total_coins, shop_data, all_users_data, player_score, opponent_score
+    global total_coins, shop_data, all_users_data, player_score, opponent_score, p1_stamina, p2_stamina
     shop_data = {k: v.copy() for k, v in DEFAULT_CHARACTERS.items()}
     
     player_score = 0
     opponent_score = 0
+    p1_stamina = MAX_STAMINA
+    p2_stamina = MAX_STAMINA
     
     if username in all_users_data:
         user_info = all_users_data[username]
@@ -138,8 +150,6 @@ opponent = pygame.Rect(SCREEN_WIDTH - 30 - PADDLE_WIDTH, (SCREEN_HEIGHT // 2) - 
 ball = pygame.Rect((SCREEN_WIDTH // 2) - (BALL_SIZE // 2), (SCREEN_HEIGHT // 2) - (BALL_SIZE // 2), BALL_SIZE, BALL_SIZE)
 
 # Speeds
-p1_direction = 0
-p2_direction = 0
 BASE_SPEED = 7
 SPRINT_SPEED = 13
 AI_BASE_SPEED = 4.8
@@ -153,9 +163,9 @@ opponent_score = 0
 # Fonts
 game_font = pygame.font.Font(None, 65)
 menu_font = pygame.font.Font(None, 35)
-title_font = pygame.font.Font(None, 70)
+title_font = pygame.font.Font(None, 65)
 coin_font = pygame.font.Font(None, 45)
-small_font = pygame.font.Font(None, 28)
+small_font = pygame.font.Font(None, 26)
 
 def reset_ball():
     global ball_speed_x, ball_speed_y, current_ball_color
@@ -166,7 +176,7 @@ def reset_ball():
     current_ball_color = random.choice(BALL_COLORS)
 
 def attempt_select_or_buy(char_key):
-    global total_coins, GAME_STATE, selected_char, color_player, active_ability, auto_ability_timer
+    global total_coins, GAME_STATE, selected_char, color_player, active_ability, auto_ability_timer, p1_stamina, p2_stamina
     char = shop_data[char_key]
     
     if char["unlocked"]:
@@ -175,14 +185,41 @@ def attempt_select_or_buy(char_key):
         active_ability = char["ability"]
         auto_ability_timer = pygame.time.get_ticks() 
         GAME_STATE = "PLAYING"
+        p1_stamina = MAX_STAMINA
+        p2_stamina = MAX_STAMINA
         
-        player.y = (SCREEN_HEIGHT // 2) - (PADDLE_BASE_HEIGHT // 2)
+        if active_ability == "GIANT":
+            player.height = 180
+        else:
+            player.height = PADDLE_BASE_HEIGHT
+            
+        player.y = (SCREEN_HEIGHT // 2) - (player.height // 2)
         opponent.y = (SCREEN_HEIGHT // 2) - (PADDLE_BASE_HEIGHT // 2)
     else:
         if total_coins >= char["cost"]:
             total_coins -= char["cost"]
             char["unlocked"] = True
             save_game() 
+
+def draw_stamina_bar(surface, x, y, stamina, align="left"):
+    bar_width = 150
+    bar_height = 15
+    fill_width = int((stamina / MAX_STAMINA) * bar_width)
+    
+    if stamina > 50: color = (0, 255, 100)
+    elif stamina > 20: color = (255, 200, 0)
+    else: color = (255, 50, 50)
+    
+    if align == "right": x = x - bar_width
+        
+    pygame.draw.rect(surface, (45, 45, 65), (x, y, bar_width, bar_height), border_radius=4)
+    if fill_width > 0:
+        if align == "right":
+            pygame.draw.rect(surface, color, (x + (bar_width - fill_width), y, fill_width, bar_height), border_radius=4)
+        else:
+            pygame.draw.rect(surface, color, (x, y, fill_width, bar_height), border_radius=4)
+    pygame.draw.rect(surface, COLOR_WHITE, (x, y, bar_width, bar_height), 2, border_radius=4)
+
 
 # Game Clock
 clock = pygame.time.Clock()
@@ -266,6 +303,8 @@ while running:
                 if event.key == pygame.K_1: attempt_select_or_buy("1")
                 elif event.key == pygame.K_2: attempt_select_or_buy("2")
                 elif event.key == pygame.K_3: attempt_select_or_buy("3")
+                elif event.key == pygame.K_4: attempt_select_or_buy("4")
+                elif event.key == pygame.K_5: attempt_select_or_buy("5")
                 elif event.key == pygame.K_m: 
                     if game_mode in ["1vBOT", "GHOST"]:
                         game_mode = "1v1"
@@ -280,31 +319,21 @@ while running:
                     ghost_search_msg = "Enter opponent's username:"
                     GAME_STATE = "LOGIN_GHOST"
                 elif event.key == pygame.K_l:
-                    load_all_data() # Refresh data before showing leaderboard
+                    load_all_data()
                     GAME_STATE = "LEADERBOARD"
                 elif event.key == pygame.K_r:
                     reset_profile()
                 elif event.key == pygame.K_s:
                     save_game()
                     save_message_timer = current_time
-
-            # PLAYING
+            
+            # PLAYING (New Reset Score Feature)
             elif GAME_STATE == "PLAYING":
-                if event.key == pygame.K_w: p1_direction = -1
-                if event.key == pygame.K_s: p1_direction = 1
-                
-                if game_mode in ["1vBOT", "GHOST"]:
-                    if event.key == pygame.K_UP: p1_direction = -1
-                    if event.key == pygame.K_DOWN: p1_direction = 1
-                elif game_mode == "1v1":
-                    if event.key == pygame.K_UP: p2_direction = -1
-                    if event.key == pygame.K_DOWN: p2_direction = 1
-
-        if event.type == pygame.KEYUP:
-            if GAME_STATE == "PLAYING":
-                if event.key in (pygame.K_w, pygame.K_s): p1_direction = 0
-                if game_mode in ["1vBOT", "GHOST"] and event.key in (pygame.K_UP, pygame.K_DOWN): p1_direction = 0
-                if game_mode == "1v1" and event.key in (pygame.K_UP, pygame.K_DOWN): p2_direction = 0
+                if event.key == pygame.K_r:
+                    # Reset the scores but keep the coins safe
+                    player_score = 0
+                    opponent_score = 0
+                    reset_ball()
 
     if not running:
         break
@@ -358,7 +387,6 @@ while running:
         title_text = title_font.render("GLOBAL LEADERBOARD", True, COLOR_GOLD)
         screen.blit(title_text, (SCREEN_WIDTH//2 - title_text.get_width()//2, 50))
         
-        # Sort users by coins descending
         sorted_users = sorted(all_users_data.items(), key=lambda x: x[1].get('coins', 0), reverse=True)
         
         y_pos = 150
@@ -393,138 +421,201 @@ while running:
         else:
             info_str = f"Player: {current_username}  |  Mode: 1vBOT  |  Coins: {total_coins}"
             
-        info_text = menu_font.render(info_str, True, COLOR_GOLD)
-        screen.blit(info_text, (SCREEN_WIDTH//2 - info_text.get_width()//2, 30))
+        info_text = small_font.render(info_str, True, COLOR_GOLD)
+        screen.blit(info_text, (SCREEN_WIDTH//2 - info_text.get_width()//2, 15))
         
         controls_text = small_font.render("[M] 1v1 Mode | [O] Ghost Mode | [L] Leaderboard | [S] Save | [ESC] Quit", True, (150, 150, 150))
-        screen.blit(controls_text, (SCREEN_WIDTH//2 - controls_text.get_width()//2, 80))
+        screen.blit(controls_text, (SCREEN_WIDTH//2 - controls_text.get_width()//2, 50))
 
         title_text = title_font.render("SELECT CHARACTER", True, COLOR_WHITE)
-        screen.blit(title_text, (SCREEN_WIDTH//2 - title_text.get_width()//2, 140))
+        screen.blit(title_text, (SCREEN_WIDTH//2 - title_text.get_width()//2, 100))
         
-        y_offset = 230
+        y_offset = 180
         for key, char in shop_data.items():
             status = "UNLOCKED (Press to Play)" if char["unlocked"] else f"COST: {char['cost']} Coins (Press to Buy)"
             color = char["color"] if char["unlocked"] else (100, 100, 100)
             
             char_title = menu_font.render(f"[{key}] {char['name']} - {status}", True, color)
-            char_desc = menu_font.render(char['desc'], True, (180, 180, 180))
+            char_desc = small_font.render(char['desc'], True, (180, 180, 180))
             
-            screen.blit(char_title, (100, y_offset))
-            screen.blit(char_desc, (120, y_offset + 30))
-            y_offset += 90
+            screen.blit(char_title, (70, y_offset))
+            screen.blit(char_desc, (100, y_offset + 30))
+            y_offset += 75
 
         if save_message_timer > 0 and (current_time - save_message_timer) < 2000:
             saved_text = menu_font.render("PROFILE SAVED!", True, (0, 255, 0))
-            screen.blit(saved_text, (SCREEN_WIDTH//2 - saved_text.get_width()//2, SCREEN_HEIGHT - 40))
+            screen.blit(saved_text, (SCREEN_WIDTH//2 - saved_text.get_width()//2, SCREEN_HEIGHT - 35))
 
         pygame.display.flip()
         clock.tick(FPS)
         continue
 
     # --- 4. PLAYING LOGIC ---
-    if active_ability == "AUTO_PILOT":
-        if not is_auto_active and current_time - auto_ability_timer > 5000:
-            is_auto_active = True
-            auto_end_time = current_time + 2000
-            auto_ability_timer = current_time
-            
-        if is_auto_active and current_time > auto_end_time:
-            is_auto_active = False
-            auto_ability_timer = current_time
-
-    current_player_speed = SPRINT_SPEED if active_ability == "SPEED" else BASE_SPEED
-    
-    if is_auto_active:
-        if player.centery < ball.centery: player.y += current_player_speed
-        if player.centery > ball.centery: player.y -= current_player_speed
-    else:
-        player.y += p1_direction * current_player_speed
-    player.clamp_ip(screen.get_rect())
-
-    if game_mode in ["1vBOT", "GHOST"]:
-        if ball_speed_x > 0:
-            if opponent.centery < ball.centery - 15: 
-                opponent.y += AI_BASE_SPEED
-            elif opponent.centery > ball.centery + 15: 
-                opponent.y -= AI_BASE_SPEED
+    if GAME_STATE == "PLAYING":
+        
+        # KEYBOARD POLLING
+        keys = pygame.key.get_pressed()
+        
+        # P1 Stamina & Movement
+        p1_direction = 0
+        if keys[pygame.K_w]: p1_direction = -1
+        if keys[pygame.K_s]: p1_direction = 1
+        
+        p1_sprinting = False
+        if keys[pygame.K_LSHIFT] and p1_stamina > 0 and p1_direction != 0:
+            p1_sprinting = True
+            p1_stamina = max(0, p1_stamina - STAMINA_DRAIN)
         else:
-            target_y = SCREEN_HEIGHT // 2
-            if opponent.centery < target_y - 10: opponent.y += AI_BASE_SPEED - 2 
-            elif opponent.centery > target_y + 10: opponent.y -= AI_BASE_SPEED - 2
-    else:
-        opponent.y += p2_direction * BASE_SPEED
-    opponent.clamp_ip(screen.get_rect())
+            p1_stamina = min(MAX_STAMINA, p1_stamina + STAMINA_REGEN)
 
-    ball.x += ball_speed_x
-    ball.y += ball_speed_y
-
-    if ball.top <= 0 or ball.bottom >= SCREEN_HEIGHT:
-        ball_speed_y *= -1
-        current_ball_color = random.choice(BALL_COLORS)
-
-    # Scoring Rules
-    if ball.left <= 0:
-        opponent_score += 1
+        # P2 Stamina & Movement
+        p2_direction = 0
+        p2_sprinting = False
         if game_mode == "1v1":
-            p2_total_coins += 10
-            save_game()
-        reset_ball()
+            if keys[pygame.K_UP]: p2_direction = -1
+            if keys[pygame.K_DOWN]: p2_direction = 1
+            
+            if keys[pygame.K_RSHIFT] and p2_stamina > 0 and p2_direction != 0:
+                p2_sprinting = True
+                p2_stamina = max(0, p2_stamina - STAMINA_DRAIN)
+            else:
+                p2_stamina = min(MAX_STAMINA, p2_stamina + STAMINA_REGEN)
+        else:
+            # AI / Ghost mode overrides
+            p2_stamina = min(MAX_STAMINA, p2_stamina + STAMINA_REGEN)
+            if keys[pygame.K_UP]: p1_direction = -1
+            if keys[pygame.K_DOWN]: p1_direction = 1
+
+        # Auto-Pilot Logic
+        if active_ability == "AUTO_PILOT":
+            if not is_auto_active and current_time - auto_ability_timer > 5000:
+                is_auto_active = True
+                auto_end_time = current_time + 2000
+                auto_ability_timer = current_time
+                
+            if is_auto_active and current_time > auto_end_time:
+                is_auto_active = False
+                auto_ability_timer = current_time
+
+        # P1 Speed Calculation
+        if active_ability == "SPEED": p1_speed = SPRINT_SPEED
+        elif active_ability == "GIANT": p1_speed = BASE_SPEED - 2
+        else: p1_speed = BASE_SPEED
         
-    if ball.right >= SCREEN_WIDTH:
-        player_score += 1
-        total_coins += 10 
-        save_game() 
-        reset_ball()
-
-    if ball.colliderect(player):
-        ball_speed_x *= -1.05
-        ball_speed_y += random.uniform(-1, 1) 
-        ball.left = player.right
+        if p1_sprinting: p1_speed += 6
         
-    if ball.colliderect(opponent):
-        ball_speed_x *= -1.05
-        ball_speed_y += random.uniform(-1, 1)
-        ball.right = opponent.left
+        # P2 Speed Calculation
+        p2_speed = BASE_SPEED
+        if p2_sprinting: p2_speed += 6
 
-    # --- 5. Rendering Assets ---
-    screen.fill(COLOR_BG)
-    pygame.draw.line(screen, (32, 28, 54), (SCREEN_WIDTH // 2, 0), (SCREEN_WIDTH // 2, SCREEN_HEIGHT), 4)
+        # Move Player 1
+        if is_auto_active:
+            if player.centery < ball.centery: player.y += p1_speed
+            if player.centery > ball.centery: player.y -= p1_speed
+        else:
+            player.y += p1_direction * p1_speed
+        player.clamp_ip(screen.get_rect())
 
-    pygame.draw.rect(screen, color_player, player, border_radius=4)
-    p2_draw_color = COLOR_P2 if game_mode == "1v1" else COLOR_AI
-    pygame.draw.rect(screen, p2_draw_color, opponent, border_radius=4)
-    pygame.draw.ellipse(screen, current_ball_color, ball)
+        # Move Player 2 / AI
+        if game_mode in ["1vBOT", "GHOST"]:
+            if ball_speed_x > 0:
+                if opponent.centery < ball.centery - 15: 
+                    opponent.y += AI_BASE_SPEED
+                elif opponent.centery > ball.centery + 15: 
+                    opponent.y -= AI_BASE_SPEED
+            else:
+                target_y = SCREEN_HEIGHT // 2
+                if opponent.centery < target_y - 10: opponent.y += AI_BASE_SPEED - 2 
+                elif opponent.centery > target_y + 10: opponent.y -= AI_BASE_SPEED - 2
+        else:
+            opponent.y += p2_direction * p2_speed
+            
+        opponent.clamp_ip(screen.get_rect())
 
-    if is_auto_active:
-        aura_rect = player.inflate(10, 10)
-        pygame.draw.rect(screen, (255, 255, 0), aura_rect, 2, border_radius=4)
+        # Move Ball
+        ball.x += ball_speed_x
+        ball.y += ball_speed_y
+        
+        # Enforce Speed Caps to prevent clipping
+        if ball_speed_x > MAX_BALL_SPEED: ball_speed_x = MAX_BALL_SPEED
+        if ball_speed_x < -MAX_BALL_SPEED: ball_speed_x = -MAX_BALL_SPEED
 
-    # In-game HUD
-    player_text = game_font.render(f"{player_score}", True, color_player)
-    opponent_text = game_font.render(f"{opponent_score}", True, p2_draw_color)
-    ingame_coin_text = menu_font.render(f"P1 Coins: {total_coins}", True, (255, 215, 0))
-    
-    # Determine who you are playing against for HUD
-    if game_mode == "1v1": vs_string = f"P2 (Arrows): {p2_username}"
-    elif game_mode == "GHOST": vs_string = f"GHOST: {p2_username}"
-    else: vs_string = "BOT"
-    
-    mode_text = small_font.render(f"{current_username} vs {vs_string}", True, (150, 150, 150))
-    esc_hint_text = small_font.render("[ESC] Return to Menu", True, (150, 150, 150))
-    
-    screen.blit(player_text, (SCREEN_WIDTH // 4, 25))
-    screen.blit(opponent_text, (3 * SCREEN_WIDTH // 4, 25))
-    screen.blit(ingame_coin_text, (20, 20))
-    
-    if game_mode == "1v1":
-        p2_coin_text = menu_font.render(f"P2 Coins: {p2_total_coins}", True, (255, 215, 0))
-        screen.blit(p2_coin_text, (SCREEN_WIDTH - p2_coin_text.get_width() - 20, 20))
-        screen.blit(esc_hint_text, (SCREEN_WIDTH - esc_hint_text.get_width() - 20, 50))
-    else:
-        screen.blit(esc_hint_text, (SCREEN_WIDTH - esc_hint_text.get_width() - 20, 20))
+        if ball.top <= 0 or ball.bottom >= SCREEN_HEIGHT:
+            ball_speed_y *= -1
+            current_ball_color = random.choice(BALL_COLORS)
 
-    screen.blit(mode_text, (SCREEN_WIDTH//2 - mode_text.get_width()//2, 10))
+        # Scoring Rules
+        if ball.left <= 0:
+            opponent_score += 1
+            if game_mode == "1v1":
+                p2_total_coins += 10
+                save_game()
+            reset_ball()
+            
+        if ball.right >= SCREEN_WIDTH:
+            player_score += 1
+            total_coins += 10 
+            save_game() 
+            reset_ball()
+
+        # Collisions
+        if ball.colliderect(player):
+            hit_mult = -1.2 if active_ability == "POWER_STRIKE" else -1.05
+            if p1_sprinting: hit_mult -= 0.15  # Extra power from sprinting!
+            
+            ball_speed_x *= hit_mult
+            ball_speed_y += random.uniform(-1, 1) 
+            ball.left = player.right
+            
+        if ball.colliderect(opponent):
+            hit_mult = -1.05
+            if p2_sprinting: hit_mult -= 0.15
+            
+            ball_speed_x *= hit_mult
+            ball_speed_y += random.uniform(-1, 1)
+            ball.right = opponent.left
+
+        # --- 5. Rendering Assets ---
+        screen.fill(COLOR_BG)
+        pygame.draw.line(screen, (32, 28, 54), (SCREEN_WIDTH // 2, 0), (SCREEN_WIDTH // 2, SCREEN_HEIGHT), 4)
+
+        pygame.draw.rect(screen, color_player, player, border_radius=4)
+        p2_draw_color = COLOR_P2 if game_mode == "1v1" else COLOR_AI
+        pygame.draw.rect(screen, p2_draw_color, opponent, border_radius=4)
+        pygame.draw.ellipse(screen, current_ball_color, ball)
+
+        if is_auto_active:
+            aura_rect = player.inflate(10, 10)
+            pygame.draw.rect(screen, (255, 255, 0), aura_rect, 2, border_radius=4)
+
+        # In-game HUD Texts
+        player_text = game_font.render(f"{player_score}", True, color_player)
+        opponent_text = game_font.render(f"{opponent_score}", True, p2_draw_color)
+        ingame_coin_text = menu_font.render(f"P1 Coins: {total_coins}", True, (255, 215, 0))
+        
+        if game_mode == "1v1": vs_string = f"P2 (Arrows/RShift): {p2_username}"
+        elif game_mode == "GHOST": vs_string = f"GHOST: {p2_username}"
+        else: vs_string = "BOT"
+        
+        mode_text = small_font.render(f"{current_username} (W/S/LShift) vs {vs_string}", True, (150, 150, 150))
+        
+        # UPDATED: Added [R] instruction in the HUD Hint Text
+        esc_hint_text = small_font.render("[ESC] Menu  |  [R] Reset Score", True, (150, 150, 150))
+        
+        screen.blit(player_text, (SCREEN_WIDTH // 4, 25))
+        screen.blit(opponent_text, (3 * SCREEN_WIDTH // 4, 25))
+        screen.blit(ingame_coin_text, (20, 20))
+        draw_stamina_bar(screen, 20, 60, p1_stamina, "left")
+        
+        if game_mode == "1v1":
+            p2_coin_text = menu_font.render(f"P2 Coins: {p2_total_coins}", True, (255, 215, 0))
+            screen.blit(p2_coin_text, (SCREEN_WIDTH - p2_coin_text.get_width() - 20, 20))
+            draw_stamina_bar(screen, SCREEN_WIDTH - 20, 60, p2_stamina, "right")
+            screen.blit(esc_hint_text, (SCREEN_WIDTH - esc_hint_text.get_width() - 20, 85))
+        else:
+            screen.blit(esc_hint_text, (SCREEN_WIDTH - esc_hint_text.get_width() - 20, 20))
+
+        screen.blit(mode_text, (SCREEN_WIDTH//2 - mode_text.get_width()//2, 10))
 
     pygame.display.flip()
     clock.tick(FPS)
